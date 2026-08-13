@@ -1,4 +1,3 @@
-using System.Web;
 using VDS.RDF;
 
 namespace StockGraph.Core;
@@ -71,7 +70,7 @@ public static class RdfTermFactory
     public static LiteralFactory Literals { get; } = new();
 
     public static string SafeSegment(string value)
-        => HttpUtility.UrlEncode(value.Trim().Replace("/", "_"), System.Text.Encoding.UTF8);
+        => Uri.EscapeDataString(value.Trim().Replace("/", "_"));
 
     private static string NormalizeDateId(string value)
     {
