@@ -35,7 +35,12 @@ public class OxigraphStoreCoordinator : IDisposable
         }
     }
 
-    public object ExecuteQuery(string sparql)
+    /// <summary>
+    /// Executes a SPARQL query against the store.
+    /// </summary>
+    /// <param name="sparql">The SPARQL query string.</param>
+    /// <returns>An <see cref="Oxigraph.QueryResults"/> containing the query results. Caller is responsible for disposing.</returns>
+    public Oxigraph.QueryResults? ExecuteQuery(string sparql)
     {
         lock (_lock)
         {
@@ -71,6 +76,30 @@ public class OxigraphStoreCoordinator : IDisposable
     }
 
     public bool IsOpen => _store != null;
+
+    /// <summary>
+    /// Builds the store from source data. This operation is delegated to <see cref="FinancialGraphBuilder"/>.
+    /// </summary>
+    /// <remarks>
+    /// This stub throws <see cref="NotImplementedException"/> as the actual build logic
+    /// resides in FinancialGraphBuilder (Task 2). The coordinator provides the underlying
+    /// operations (Clear, AddQuads, Flush) that FinancialGraphBuilder orchestrates.
+    /// </remarks>
+    public void Build()
+        => throw new NotImplementedException("Build is handled by FinancialGraphBuilder");
+
+    /// <summary>
+    /// Exports the store data to a specified RDF format. This operation is delegated to <see cref="RdfExportService"/>.
+    /// </summary>
+    /// <remarks>
+    /// This stub throws <see cref="NotImplementedException"/> as the actual export logic
+    /// resides in RdfExportService (Task 4). The coordinator provides query execution
+    /// that RdfExportService uses to retrieve data for export.
+    /// </remarks>
+    /// <param name="format">The RDF format (e.g., "trig", "nq", "ttl", "nt").</param>
+    /// <param name="outputStream">The stream to write exported data to.</param>
+    public void Export(string format, Stream outputStream)
+        => throw new NotImplementedException("Export is handled by RdfExportService");
 
     public void Dispose()
     {
