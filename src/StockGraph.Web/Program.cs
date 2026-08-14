@@ -22,8 +22,11 @@ var coordinator = new OxigraphStoreCoordinator(settings.StorePath);
 builder.Services.AddSingleton(coordinator);
 
 // Services resolve the coordinator directly (it's already instantiated).
-builder.Services.AddSingleton(sp => new FinancialGraphBuilder(
-    coordinator, settings.GraphIri));
+// The builder is constructed WITHOUT a graph IRI so all quads are loaded into
+// the default graph — Oxigraph does not support FROM/FROM NAMED SPARQL clauses,
+// so default-graph queries (SparqlService, GraphProjectionService, RdfExportService)
+// would otherwise see an empty dataset.
+builder.Services.AddSingleton(sp => new FinancialGraphBuilder(coordinator));
 builder.Services.AddSingleton(sp => new SparqlService(
     coordinator, settings.ResolveQueryDirectory()));
 builder.Services.AddSingleton(sp => new RdfExportService(coordinator));
