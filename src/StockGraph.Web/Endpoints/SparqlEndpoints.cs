@@ -26,7 +26,8 @@ public static class SparqlEndpoints
                 }
                 if (result is QueryBoolean b)
                 {
-                    return Results.Json(new { boolean = b.Value });
+                    var json = b.Serialize(QueryResultsFormat.Json);
+                    return Results.Text(json, "application/sparql-results+json");
                 }
                 if (result is QueryTriples qt)
                 {
@@ -58,7 +59,14 @@ public static class SparqlEndpoints
                 }
                 if (result is QueryBoolean b)
                 {
-                    return Results.Json(new { boolean = b.Value });
+                    var json = b.Serialize(QueryResultsFormat.Json);
+                    return Results.Text(json, "application/sparql-results+json");
+                }
+                if (result is QueryTriples qt)
+                {
+                    using var ms = new System.IO.MemoryStream();
+                    qt.SerializeToStream(ms, Oxigraph.RdfFormat.TriG);
+                    return Results.Bytes(ms.ToArray(), "application/trig");
                 }
                 return Results.Json(new { });
             }

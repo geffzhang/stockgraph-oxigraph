@@ -12,6 +12,7 @@ public class FinancialGraphBuilder
 {
     private readonly OxigraphStoreCoordinator _coordinator;
     private readonly IGraphName _graphName;
+    private readonly System.Threading.SemaphoreSlim _buildLock = new(1, 1);
 
     public FinancialGraphBuilder(OxigraphStoreCoordinator coordinator, string? graphIri = null)
     {
@@ -28,32 +29,42 @@ public class FinancialGraphBuilder
         int? maxNewsRows = null,
         int chunkSize = 10_000)
     {
-        var stats = new BuildStats();
-        var dir = new DirectoryInfo(sourceDir);
+        if (!_buildLock.Wait(0))
+            throw new InvalidOperationException("Storage is currently locked by another build operation");
 
-        if (clear)
-            _coordinator.Clear();
-
-        var quadBuffer = new List<Oxigraph.Quad>(chunkSize);
-
-        AddSchemaQuads(quadBuffer, _graphName);
-
-        var dataDir = new DirectoryInfo(Path.Combine(dir.FullName, "data"));
-        if (dataDir.Exists)
+        try
         {
-            AddStockPriceFiles(quadBuffer, stats, dataDir, maxPriceRows, chunkSize, _graphName);
-            AddNewsQuads(quadBuffer, stats, dataDir, maxNewsRows, chunkSize, _graphName);
-        }
+            var stats = new BuildStats();
+            var dir = new DirectoryInfo(sourceDir);
 
-        if (quadBuffer.Count > 0)
+            if (clear)
+                _coordinator.Clear();
+
+            var quadBuffer = new List<Oxigraph.Quad>(chunkSize);
+
+            AddSchemaQuads(quadBuffer, _graphName);
+
+            var dataDir = new DirectoryInfo(Path.Combine(dir.FullName, "data"));
+            if (dataDir.Exists)
+            {
+                AddStockPriceFiles(quadBuffer, stats, dataDir, maxPriceRows, chunkSize, _graphName);
+                AddNewsQuads(quadBuffer, stats, dataDir, maxNewsRows, chunkSize, _graphName);
+            }
+
+            if (quadBuffer.Count > 0)
+            {
+                _coordinator.AddQuads(quadBuffer);
+                stats.Quads += quadBuffer.Count;
+                quadBuffer.Clear();
+            }
+
+            _coordinator.Flush();
+            return stats;
+        }
+        finally
         {
-            _coordinator.AddQuads(quadBuffer);
-            stats.Quads += quadBuffer.Count;
-            quadBuffer.Clear();
+            _buildLock.Release();
         }
-
-        _coordinator.Flush();
-        return stats;
     }
 
     private void AddSchemaQuads(List<Oxigraph.Quad> buffer, IGraphName graph)
