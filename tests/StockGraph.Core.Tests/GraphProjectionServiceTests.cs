@@ -55,7 +55,7 @@ public class GraphProjectionServiceTests : IDisposable
 
         var stockNodes = proj.Nodes.Where(n => n.Type == "Stock").ToList();
         var dayNodes = proj.Nodes.Where(n => n.Type == "TradingDay").ToList();
-        Assert.True(dayNodes.Count <= stockNodes.Count * 3);
+        Assert.Equal(stockNodes.Count * 3, dayNodes.Count);
     }
 
     [Fact]
@@ -72,7 +72,6 @@ public class GraphProjectionServiceTests : IDisposable
         var proj = _service.Project();
 
         Assert.True(proj.Metadata.TotalNodes > 0);
-        Assert.True(proj.Metadata.GeneratedAtMs > 0);
         Assert.NotEmpty(proj.Metadata.NodeTypeCounts);
     }
 

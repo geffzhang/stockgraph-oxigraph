@@ -38,7 +38,8 @@ LIMIT 50";
         {
             foreach (var row in stockSet)
             {
-                var stockUri = TermToString(row["stock"]);
+                // ?stock is bound (required triple pattern), so it is never null here.
+                var stockUri = TermToString(row["stock"])!;
                 var label = TermToString(row["label"]) ?? stockUri.Split('/').Last();
                 var exchange = TermToString(row["exchange"]) ?? "";
 
@@ -63,7 +64,8 @@ LIMIT {maxDaysPerStock}";
                 {
                     foreach (var dayRow in daySet)
                     {
-                        var dayUri = TermToString(dayRow["day"]);
+                        // ?day is bound (required triple pattern), so it is never null here.
+                        var dayUri = TermToString(dayRow["day"])!;
                         var date = TermToString(dayRow["tradeDate"]) ?? "";
                         if (seenNodeIds.Add(dayUri))
                         {
@@ -91,7 +93,8 @@ LIMIT {maxNews}";
         {
             foreach (var row in newsSet)
             {
-                var newsUri = TermToString(row["news"]);
+                // ?news is bound (required triple pattern), so it is never null here.
+                var newsUri = TermToString(row["news"])!;
                 var label = TermToString(row["label"]) ?? newsUri.Split('/').Last();
                 if (seenNodeIds.Add(newsUri))
                 {
@@ -109,12 +112,13 @@ LIMIT {maxNews}";
                 nodes.Count, edges.Count, nodeTypeCounts));
     }
 
-    /// <summary>Extract the string value from an RDF term, handling NamedNode, BlankNode, and Literal types.</summary>
-    private static string TermToString(ITerm? term) => term switch
+    /// <summary>Extract the string value from an RDF term, handling NamedNode, BlankNode, and Literal types.
+    /// Returns null when the term is null so callers can apply their own fallback (e.g. URI-derived label).</summary>
+    private static string? TermToString(ITerm? term) => term switch
     {
         NamedNode nn => nn.Value,
         BlankNode bn => bn.Value,
         Literal lit => lit.Value,
-        _ => term?.ToString() ?? "",
+        _ => term?.ToString(),
     };
 }
