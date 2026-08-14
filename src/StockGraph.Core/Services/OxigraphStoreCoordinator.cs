@@ -18,18 +18,12 @@ public class OxigraphStoreCoordinator : IDisposable
     {
         lock (_lock)
         {
-            // Close any existing store first — ensures native handles are released
-            // before we try to open a fresh one at the same path.
+            // Idempotent: if the store is already open, do nothing. Opening a
+            // store is non-destructive — we never dispose or delete an existing
+            // store directory, because doing so races with any lingering native
+            // RocksDB LOCK handle (e.g. when the same path is reused across tests).
             if (_store != null)
-            {
-                _store.Dispose();
-                _store = null;
-            }
-
-            // Delete any pre-existing store directory to get a completely clean slate.
-            // This is critical when the same path is reused (e.g. in test scenarios).
-            if (Directory.Exists(_storePath))
-                Directory.Delete(_storePath, recursive: true);
+                return;
 
             // Ensure parent directory exists.
             var dir = Path.GetDirectoryName(_storePath)!;
