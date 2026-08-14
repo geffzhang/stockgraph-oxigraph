@@ -1,0 +1,7 @@
+
+@StockGraph.Web_HostAddress = http://localhost:5187
+
+GET {{StockGraph.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

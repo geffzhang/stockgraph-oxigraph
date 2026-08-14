@@ -560,26 +560,6 @@
           }
         }
       },
-      "Oxigraph/0.5.7": {
-        "runtime": {
-          "lib/net10.0/Oxigraph.dll": {
-            "assemblyVersion": "0.5.7.0",
-            "fileVersion": "0.5.7.0"
-          }
-        }
-      },
-      "Oxigraph.Extensions.DotNetRDF/0.5.7": {
-        "dependencies": {
-          "Oxigraph": "0.5.7",
-          "dotNetRdf": "3.5.2"
-        },
-        "runtime": {
-          "lib/net10.0/Oxigraph.Extensions.DotNetRDF.dll": {
-            "assemblyVersion": "0.5.7.0",
-            "fileVersion": "0.5.7.0"
-          }
-        }
-      },
       "Resta.UriTemplates/1.4.0": {
         "runtime": {
           "lib/netstandard2.0/Resta.UriTemplates.dll": {
@@ -707,10 +687,30 @@
           }
         }
       },
+      "Oxigraph/0.6.0-dev": {
+        "runtime": {
+          "Oxigraph.dll": {
+            "assemblyVersion": "0.6.0.0",
+            "fileVersion": "0.6.0.0"
+          }
+        }
+      },
+      "Oxigraph.Extensions.DotNetRDF/0.6.0-dev": {
+        "dependencies": {
+          "Oxigraph": "0.6.0-dev",
+          "dotNetRdf": "3.5.2"
+        },
+        "runtime": {
+          "Oxigraph.Extensions.DotNetRDF.dll": {
+            "assemblyVersion": "0.6.0.0",
+            "fileVersion": "0.6.0.0"
+          }
+        }
+      },
       "StockGraph.Core/1.0.0": {
         "dependencies": {
-          "Oxigraph": "0.5.7",
-          "Oxigraph.Extensions.DotNetRDF": "0.5.7",
+          "Oxigraph": "0.6.0-dev",
+          "Oxigraph.Extensions.DotNetRDF": "0.6.0-dev",
           "Sep": "0.15.2",
           "dotNetRdf.Client": "3.5.2",
           "dotNetRdf.Core": "3.5.2"
@@ -940,20 +940,6 @@
       "path": "newtonsoft.json/13.0.4",
       "hashPath": "newtonsoft.json.13.0.4.nupkg.sha512"
     },
-    "Oxigraph/0.5.7": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-M2WkBSanMbjuSM0kceosFF3dZgnO4OSdphbaRLb9IikxvC2yDfuHEZ6kA2SVtseIqGB9bq1DplLMYz+WUiaqHQ==",
-      "path": "oxigraph/0.5.7",
-      "hashPath": "oxigraph.0.5.7.nupkg.sha512"
-    },
-    "Oxigraph.Extensions.DotNetRDF/0.5.7": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-uwGLFuFbSJNLk0a0iphOOODlt3t141VdF76omNxMX3jE1JHaRc6cyF2b5IsZ4mlw+2Xq0wI3G4430EAbVap3dA==",
-      "path": "oxigraph.extensions.dotnetrdf/0.5.7",
-      "hashPath": "oxigraph.extensions.dotnetrdf.0.5.7.nupkg.sha512"
-    },
     "Resta.UriTemplates/1.4.0": {
       "type": "package",
       "serviceable": true,
@@ -1044,6 +1030,16 @@
       "sha512": "sha512-yMb6vMESlSrE3Wfj7V6cjQ3S4TXdXpRqYeNEI3zsX31uTsGMJjEw6oD5F5u1cHnMptjhEECnmZSsPxB6ChZHDQ==",
       "path": "xunit.extensibility.execution/2.9.3",
       "hashPath": "xunit.extensibility.execution.2.9.3.nupkg.sha512"
+    },
+    "Oxigraph/0.6.0-dev": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Oxigraph.Extensions.DotNetRDF/0.6.0-dev": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "StockGraph.Core/1.0.0": {
       "type": "project",
