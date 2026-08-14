@@ -62,11 +62,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IDisp
         if (_disposed) return;
         _disposed = true;
 
+        // Dispose the host/coordinator (releasing the native RocksDB handle)
+        // BEFORE deleting the store directory, so the delete never races an
+        // open native handle.
+        base.Dispose(disposing);
+
         if (disposing)
         {
             ResetStoreDirectory();
         }
-
-        base.Dispose(disposing);
     }
 }
