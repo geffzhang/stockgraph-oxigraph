@@ -31,19 +31,9 @@ builder.Services.AddSingleton(sp => new GraphProjectionService(coordinator));
 
 var app = builder.Build();
 
-// Lazy-open the store on first request rather than at startup.
-// This allows test factories to configure Data:StorePath before Open() is called.
-var storeOpened = false;
-app.Use(async (context, next) =>
-{
-    if (!storeOpened)
-    {
-        coordinator.Open();
-        storeOpened = true;
-    }
-    await next();
-});
-
+// Register the exception handler BEFORE the lazy-open middleware so that
+// failures in coordinator.Open() (locked store -> 409, not opened -> 503)
+// flow into ProblemDetailsMapper instead of bypassing it as unhandled 500s.
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -61,9 +51,33 @@ app.UseExceptionHandler(errorApp =>
                 status,
                 detail = status == 500 ? "An unexpected error occurred" : detail,
                 instance = context.Request.Path,
-            });
+            }, options: null, contentType: "application/problem+json");
         }
     });
+});
+
+// Defer Open() until the first request rather than at startup so test
+// factories can override Data:StorePath before the store is opened.
+// Open() is destructive (it disposes any open store, deletes the store
+// directory, and re-creates it), so it must run exactly once. Double-checked
+// locking prevents concurrent first requests from racing each other through
+// Open() and tearing the store down mid-flight.
+var storeLock = new object();
+var storeOpened = false;
+app.Use(async (context, next) =>
+{
+    if (!storeOpened)
+    {
+        lock (storeLock)
+        {
+            if (!storeOpened)
+            {
+                coordinator.Open();
+                storeOpened = true;
+            }
+        }
+    }
+    await next();
 });
 
 app.UseSwagger();
