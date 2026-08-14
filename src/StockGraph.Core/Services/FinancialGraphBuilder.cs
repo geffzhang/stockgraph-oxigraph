@@ -11,12 +11,14 @@ namespace StockGraph.Core.Services;
 public class FinancialGraphBuilder
 {
     private readonly OxigraphStoreCoordinator _coordinator;
-    private readonly string _graphIri;
+    private readonly IGraphName _graphName;
 
     public FinancialGraphBuilder(OxigraphStoreCoordinator coordinator, string? graphIri = null)
     {
         _coordinator = coordinator;
-        _graphIri = graphIri ?? Vocabulary.GraphIri;
+        // oxigraph does not support FROM/FROM NAMED SPARQL clauses, so all quads
+        // must be loaded into the default graph for queries to find them.
+        _graphName = string.IsNullOrEmpty(graphIri) ? new DefaultGraph() : new NamedNode(graphIri);
     }
 
     public BuildStats Build(
@@ -33,20 +35,20 @@ public class FinancialGraphBuilder
             _coordinator.Clear();
 
         var quadBuffer = new List<Oxigraph.Quad>(chunkSize);
-        var graph = new Oxigraph.NamedNode(_graphIri);
 
-        AddSchemaQuads(quadBuffer, graph);
+        AddSchemaQuads(quadBuffer, _graphName);
 
         var dataDir = new DirectoryInfo(Path.Combine(dir.FullName, "data"));
         if (dataDir.Exists)
         {
-            AddStockPriceFiles(quadBuffer, stats, dataDir, maxPriceRows, chunkSize, graph);
-            AddNewsQuads(quadBuffer, stats, dataDir, maxNewsRows, chunkSize, graph);
+            AddStockPriceFiles(quadBuffer, stats, dataDir, maxPriceRows, chunkSize, _graphName);
+            AddNewsQuads(quadBuffer, stats, dataDir, maxNewsRows, chunkSize, _graphName);
         }
 
         if (quadBuffer.Count > 0)
         {
             _coordinator.AddQuads(quadBuffer);
+            stats.Quads += quadBuffer.Count;
             quadBuffer.Clear();
         }
 
@@ -54,7 +56,7 @@ public class FinancialGraphBuilder
         return stats;
     }
 
-    private void AddSchemaQuads(List<Oxigraph.Quad> buffer, Oxigraph.NamedNode graph)
+    private void AddSchemaQuads(List<Oxigraph.Quad> buffer, IGraphName graph)
     {
         var classes = new Dictionary<string, string>
         {
@@ -101,7 +103,7 @@ public class FinancialGraphBuilder
         }
     }
 
-    private void AddStockPriceFiles(List<Oxigraph.Quad> buffer, BuildStats stats, DirectoryInfo dataDir, int? maxPriceRows, int chunkSize, Oxigraph.NamedNode graph)
+    private void AddStockPriceFiles(List<Oxigraph.Quad> buffer, BuildStats stats, DirectoryInfo dataDir, int? maxPriceRows, int chunkSize, IGraphName graph)
     {
         var xshe = dataDir.GetFiles("*.XSHE.csv").OrderBy(f => f.Name).ToList();
         var xshg = dataDir.GetFiles("*.XSHG.csv").OrderBy(f => f.Name).ToList();
@@ -117,7 +119,7 @@ public class FinancialGraphBuilder
             stats.SkippedFiles.Add($"{dataDir.FullName}/*.XSHE.csv");
     }
 
-    private int AddStockPriceFile(List<Oxigraph.Quad> buffer, string filePath, string code, int? maxRows, int chunkSize, Oxigraph.NamedNode graph)
+    private int AddStockPriceFile(List<Oxigraph.Quad> buffer, string filePath, string code, int? maxRows, int chunkSize, IGraphName graph)
     {
         var stock = RdfTermFactory.StockNode(code);
         var stockNode = (INamedOrBlankNode)((INode)stock).ToOxigraphTerm();
@@ -125,9 +127,9 @@ public class FinancialGraphBuilder
         var stockTypeNode = (ITerm)((INode)stockTypeUri).ToOxigraphTerm();
 
         AddQuad(buffer, graph, stockNode, RdfTermFactory.RdfType, stockTypeNode);
-        AddQuad(buffer, graph, stockNode, RdfTermFactory.Label, (ITerm)((INode)RdfTermFactory.Literals.StringLiteral(code)).ToOxigraphTerm());
-        AddQuad(buffer, graph, stockNode, RdfTermFactory.SecurityCode, (ITerm)((INode)RdfTermFactory.Literals.StringLiteral(code)).ToOxigraphTerm());
-        AddQuad(buffer, graph, stockNode, RdfTermFactory.Exchange, (ITerm)((INode)RdfTermFactory.Literals.StringLiteral(code.Split('.').Last())).ToOxigraphTerm());
+        AddQuad(buffer, graph, stockNode, RdfTermFactory.Label, (ITerm)((INode)RdfTermFactory.Literals.PlainLiteral(code)).ToOxigraphTerm());
+        AddQuad(buffer, graph, stockNode, RdfTermFactory.SecurityCode, (ITerm)((INode)RdfTermFactory.Literals.PlainLiteral(code)).ToOxigraphTerm());
+        AddQuad(buffer, graph, stockNode, RdfTermFactory.Exchange, (ITerm)((INode)RdfTermFactory.Literals.PlainLiteral(code.Split('.').Last())).ToOxigraphTerm());
 
         if (!CsvRecordParser.TryReadCsvWithLimit(filePath, maxRows ?? int.MaxValue, out var allRows, out var headers))
             return 0;
@@ -176,7 +178,7 @@ public class FinancialGraphBuilder
         return count;
     }
 
-    private void AddNewsQuads(List<Oxigraph.Quad> buffer, BuildStats stats, DirectoryInfo dataDir, int? maxRows, int chunkSize, Oxigraph.NamedNode graph)
+    private void AddNewsQuads(List<Oxigraph.Quad> buffer, BuildStats stats, DirectoryInfo dataDir, int? maxRows, int chunkSize, IGraphName graph)
     {
         var newsFile = dataDir.GetFiles("latest_news.csv").FirstOrDefault();
         if (newsFile == null)
@@ -218,9 +220,9 @@ public class FinancialGraphBuilder
             AddQuad(buffer, graph, newsNode, RdfTermFactory.Label, (ITerm)((INode)RdfTermFactory.Literals.ZhLabelLiteral(labelText)).ToOxigraphTerm());
 
             if (!string.IsNullOrWhiteSpace(title))
-                AddQuad(buffer, graph, newsNode, RdfTermFactory.Headline, (ITerm)((INode)RdfTermFactory.Literals.StringLiteral(title)).ToOxigraphTerm());
+                AddQuad(buffer, graph, newsNode, RdfTermFactory.Headline, (ITerm)((INode)RdfTermFactory.Literals.PlainLiteral(title)).ToOxigraphTerm());
             if (!string.IsNullOrWhiteSpace(content))
-                AddQuad(buffer, graph, newsNode, RdfTermFactory.ArticleBody, (ITerm)((INode)RdfTermFactory.Literals.StringLiteral(content)).ToOxigraphTerm());
+                AddQuad(buffer, graph, newsNode, RdfTermFactory.ArticleBody, (ITerm)((INode)RdfTermFactory.Literals.PlainLiteral(content)).ToOxigraphTerm());
             if (!string.IsNullOrWhiteSpace(timestamp))
                 AddQuad(buffer, graph, newsNode, RdfTermFactory.DatePublished, (ITerm)((INode)RdfTermFactory.Literals.DateTimeLiteral(timestamp)).ToOxigraphTerm());
 
@@ -235,12 +237,12 @@ public class FinancialGraphBuilder
         stats.AddRows(newsFile.Name, count);
     }
 
-    private void AddQuad(List<Oxigraph.Quad> buffer, Oxigraph.NamedNode graph, INamedOrBlankNode subject, IUriNode pred, ITerm obj)
+    private void AddQuad(List<Oxigraph.Quad> buffer, IGraphName graph, INamedOrBlankNode subject, IUriNode pred, ITerm obj)
     {
         buffer.Add(new Oxigraph.Quad(subject, (NamedNode)((INode)pred).ToOxigraphTerm(), obj, graph));
     }
 
-    private void AddPropertyQuad(List<Oxigraph.Quad> buffer, Oxigraph.NamedNode graph, IUriNode subject, string propName, string value)
+    private void AddPropertyQuad(List<Oxigraph.Quad> buffer, IGraphName graph, IUriNode subject, string propName, string value)
     {
         var camel = ToCamelCase(propName);
         var pred = new UriNode(Vocabulary.ExTerm(camel));
