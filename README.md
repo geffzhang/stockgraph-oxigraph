@@ -1,92 +1,145 @@
-# Financial Knowledge Graphs with Oxigraph
+# Financial Knowledge Graphs with Oxigraph (.NET)
 
-This root project refactors the original `Financial-Knowledge-Graphs` Neo4j notebook flow into a local RDF graph backed by Oxigraph.
+This project stores the original `Financial-Knowledge-Graphs` Neo4j notebook
+domain as a local RDF graph backed by Oxigraph, served by an ASP.NET Core Web
+API on .NET 10. The store and query layer are implemented in C# (`StockGraph.Core`),
+exposed through a minimal-API web host (`StockGraph.Web`).
 
-## What Changed
-
-The original repository builds property-graph nodes and relationships with `py2neo`:
-
-- `股票`, `股东`, `概念`, `公告`, `沪股通`, `深股通`
-- relationships such as `参股`, `概念属于`, `发布公告`, `成分股属于`, and stock correlation edges
-
-This refactor stores the same domain as RDF triples/quads:
+The domain is modeled as RDF triples/quads:
 
 - entities become IRIs under `https://stockgraph.local/kg/`
 - labels and human text use `rdfs:label` / `schema:*`
 - relationships become RDF predicates such as `ex:holds`, `ex:belongsToConcept`, `ex:publishedAnnouncement`, `ex:memberOf`
 - queries use SPARQL instead of Cypher
 
-## Install
+## Prerequisites
+
+- **.NET 10 SDK**
+- **A local Oxigraph .NET checkout.** `src/StockGraph.Core/StockGraph.Core.csproj`
+  currently references Oxigraph via local `ProjectReference`s at
+  `E:\GitHub\oxigraph\dotnet` (the `Oxigraph` and `Oxigraph.Extensions.DotNetRDF`
+  projects). You need that checkout on your machine, or you must update the
+  `ProjectReference` paths to point at your own Oxigraph .NET checkout.
+
+## Build
 
 ```powershell
-pip install -r requirements.txt
+dotnet restore StockGraph.slnx
+dotnet build StockGraph.slnx
 ```
 
-## Build The Store
-
-Run from `C:\code\stockgraph`:
+## Run
 
 ```powershell
-python scripts\build_oxigraph.py --clear
+dotnet run --project src/StockGraph.Web/StockGraph.Web.csproj
 ```
 
-For a quick smoke test:
-
-```powershell
-python scripts\build_oxigraph.py --clear --max-price-rows 50 --max-news-rows 20
-```
-
-The default persistent store is:
+The default `http` launch profile serves the API at:
 
 ```text
-.oxigraph\financial_kg
+http://localhost:5187
 ```
 
-## Query
+Open `http://localhost:5187/` in a browser to see the AntV G6 visualization
+(the `/` route redirects to `/index.html`).
+
+## Test
 
 ```powershell
-python scripts\query_oxigraph.py queries\list_stocks.sparql
-python scripts\query_oxigraph.py queries\latest_prices.sparql
-python scripts\query_oxigraph.py queries\news_sample.sparql
+dotnet test StockGraph.slnx
 ```
 
-Inline query example:
+## API
 
-```powershell
-python scripts\query_oxigraph.py --sparql "SELECT (COUNT(*) AS ?count) WHERE { ?s ?p ?o }"
-```
+Interactive API docs are available at `/swagger`. Health check: `GET /healthz`.
 
-Open one command against the persistent store at a time. Oxigraph uses RocksDB
-under the hood, and parallel Python processes can contend for the same store
-lock on Windows.
-
-## Export RDF
-
-```powershell
-python scripts\export_rdf.py --output data\financial_kg.trig --format trig
-```
-
-Use `--format ttl`, `nt`, or `nq` for other serializations.
-
-## Visualize With AntV G6
-
-Generate an interactive HTML graph from the Oxigraph store:
-
-```powershell
-python scripts\visualize_g6.py
-```
-
-Open the generated file in a browser:
+### Build the store
 
 ```text
-data\financial_kg_g6.html
+POST /api/store/build?clear=true&maxPriceRows=5000&maxNewsRows=1000&chunkSize=10000
 ```
 
-Useful limits:
+- `clear=true` wipes the existing store before rebuilding. The store is
+  persistent and non-destructive across app restarts — data is only cleared
+  when you explicitly pass `clear=true`.
+- `maxPriceRows` / `maxNewsRows` / `chunkSize` default to the configured
+  `Limits:*` values when omitted.
+- Response: `{ "quads": ..., "rows": ..., "skippedFiles": [...] }`.
+
+### SPARQL
+
+POST the query body with `Content-Type: application/sparql-query`:
 
 ```powershell
-python scripts\visualize_g6.py --max-days-per-stock 12 --max-news 20
+curl.exe -X POST "http://localhost:5187/api/sparql" `
+  -H "Content-Type: application/sparql-query" `
+  --data-raw "SELECT (COUNT(*) AS ?count) WHERE { ?s ?p ?o }"
 ```
+
+SELECT / ASK results return `application/sparql-results+json`; CONSTRUCT /
+DESCRIBE return TriG. Pre-written queries in `queries/` can be run via
+`GET /api/queries/{name}` (e.g. `GET /api/queries/list_stocks`).
+
+### Export RDF
+
+```text
+GET /api/export?format=trig
+```
+
+Supported formats: `trig` (default), `nq`, `ttl`, `nt`. An optional
+`graph=<IRI>` parameter exports only that named graph.
+
+### Graph projection (for the G6 visualization)
+
+```text
+GET /api/graph?maxDaysPerStock=30&maxNews=50&maxRelationships=200
+```
+
+Returns the JSON projection consumed by the G6 frontend at `/index.html`.
+Omitted parameters fall back to the configured `Limits:*` defaults.
+
+## Configuration
+
+The `StockGraph.Web` app reads settings from `appsettings.json`, environment
+variables, or CLI arguments (standard .NET configuration precedence —
+last provider wins). Note that the checked-in `appsettings.json` only contains
+`Logging`/`AllowedHosts`; the `Data:*` and `Limits:*` values below are the
+in-code defaults and take effect unless you configure them externally.
+
+| Key | Default | Purpose |
+| --- | --- | --- |
+| `Data:SourcePath` | `Financial-Knowledge-Graphs` | Directory containing the input CSV data |
+| `Data:StorePath` | `.oxigraph/financial_kg` | Persistent Oxigraph store directory |
+| `Data:QueryDirectory` | `queries` | Directory of pre-written `.sparql` files |
+| `Data:GraphIri` | `https://stockgraph.local/kg/graph/main` | Main graph IRI |
+| `Limits:MaxPriceRows` | `5000` | Default max stock price rows per build |
+| `Limits:MaxNewsRows` | `1000` | Default max news rows per build |
+| `Limits:ChunkSize` | `10000` | Default insert chunk size |
+| `Limits:MaxDaysPerStock` | `30` | Default graph projection days per stock |
+| `Limits:MaxNews` | `50` | Default graph projection news items |
+| `Limits:MaxRelationships` | `200` | Default graph projection relationship cap |
+
+Examples of external configuration:
+
+```powershell
+# Environment variables (double underscore = section separator)
+$env:Data__SourcePath = "E:\data\Financial-Knowledge-Graphs"
+$env:Limits__MaxPriceRows = "10000"
+
+# CLI arguments
+dotnet run --project src/StockGraph.Web/StockGraph.Web.csproj -- --Data:SourcePath "E:\data\Financial-Knowledge-Graphs" --Limits:MaxPriceRows 10000
+```
+
+Relative paths such as `Data:SourcePath` and `Data:QueryDirectory` are resolved
+relative to the repository root (five levels up from the build output).
+
+## Windows Store Lock Limitation
+
+The persistent store is backed by RocksDB, which takes an exclusive lock on the
+store directory. **Do not run multiple Web processes against the same
+`Data:StorePath` on Windows** — a second process will fail to open the store
+(the API returns HTTP 409 when it detects a locked store). Run one instance at
+a time, or give each instance its own `Data:StorePath`.
 
 ## Research Resources
 
