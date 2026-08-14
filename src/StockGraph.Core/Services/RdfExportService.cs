@@ -19,6 +19,18 @@ public class RdfExportService
 
     public Stream Export(RdfFormat format, string? namedGraph = null)
     {
+        if (namedGraph != null)
+        {
+            // Validate before interpolating into the GRAPH <...> IRIREF to prevent
+            // SPARQL injection (the named graph comes from user input via the Web endpoint).
+            if (string.IsNullOrWhiteSpace(namedGraph)
+                || !Uri.TryCreate(namedGraph, UriKind.Absolute, out _)
+                || namedGraph.IndexOfAny(new[] { '<', '>', ' ', '\t', '\r', '\n' }) >= 0)
+            {
+                throw new ArgumentException($"Invalid graph IRI: {namedGraph}", nameof(namedGraph));
+            }
+        }
+
         var query = namedGraph != null
             ? $"CONSTRUCT {{ ?s ?p ?o }} WHERE {{ GRAPH <{namedGraph}> {{ ?s ?p ?o }} }}"
             : "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }";

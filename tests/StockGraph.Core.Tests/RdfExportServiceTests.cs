@@ -50,6 +50,16 @@ public class RdfExportServiceTests : IDisposable
         Assert.NotEmpty(content);
     }
 
+    [Theory]
+    [InlineData("https://evil/> } UNION { ?s ?p ?o }")]
+    [InlineData("https://example.org/ graph")]
+    [InlineData("not-a-iri")]
+    public void Export_拒绝非法_graph_IRI(string graphIri)
+    {
+        var ex = Assert.Throws<ArgumentException>(() => _export.Export(RdfFormat.NTriples, graphIri));
+        Assert.StartsWith("Invalid graph IRI", ex.Message);
+    }
+
     [Fact]
     public void ParseFormat_拒绝未知格式()
     {
