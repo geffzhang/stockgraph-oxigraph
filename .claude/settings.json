@@ -12,7 +12,8 @@
       "Read(//e/GitHub/oxigraph/dotnet/src/oxigraph-dotnet/**)",
       "Bash(cargo build *)",
       "Read(//e/GitHub/oxigraph/dotnet/src/Oxigraph/Model/**)",
-      "Read(//e/GitHub/oxigraph/dotnet/src/Oxigraph/**)"
+      "Read(//e/GitHub/oxigraph/dotnet/src/Oxigraph/**)",
+      "Bash(git rm *)"
     ]
   }
 }
