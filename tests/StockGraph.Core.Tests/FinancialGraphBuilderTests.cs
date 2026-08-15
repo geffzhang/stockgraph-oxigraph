@@ -59,9 +59,10 @@ public class FinancialGraphBuilderTests : IDisposable
     [Fact]
     public void Build_文件缺失时报告跳过()
     {
-        var emptyDir = Path.Combine(_tempDir, "empty_data");
-        Directory.CreateDirectory(emptyDir);
-        var stats = _builder.Build(emptyDir, clear: true);
+        // Must create the "data" subdirectory — Build() always looks for dataDir = sourceDir/data
+        var emptyDataDir = Path.Combine(_tempDir, "empty_data", "data");
+        Directory.CreateDirectory(emptyDataDir);
+        var stats = _builder.Build(Path.Combine(_tempDir, "empty_data"), clear: true);
 
         Assert.Contains(stats.SkippedFiles, f => f.Contains("latest_news.csv"));
     }

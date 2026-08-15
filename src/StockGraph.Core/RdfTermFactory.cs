@@ -100,5 +100,7 @@ public static class RdfTermFactory
         public ILiteralNode StringLiteral(string? value) => new LiteralNode(value ?? "");
         public ILiteralNode BoolLiteral(bool value) => new LiteralNode(value.ToString().ToLower(), Vocabulary.XsdTerm("boolean"));
         public ILiteralNode ZhLabelLiteral(string value) => new LiteralNode(value, "zh", false);
+        /// <summary>Creates a plain untyped literal (no xsd:string datatype — required for Oxigraph compatibility).</summary>
+        public ILiteralNode PlainLiteral(string value) => new LiteralNode(value ?? "");
     }
 }

@@ -18,11 +18,36 @@ public class OxigraphStoreCoordinator : IDisposable
     {
         lock (_lock)
         {
-            if (_store != null) return;
+            // Idempotent: if the store is already open, do nothing. Opening a
+            // store is non-destructive — we never dispose or delete an existing
+            // store directory, because doing so races with any lingering native
+            // RocksDB LOCK handle (e.g. when the same path is reused across tests).
+            if (_store != null)
+                return;
+
+            // Ensure parent directory exists.
             var dir = Path.GetDirectoryName(_storePath)!;
-            if (!string.IsNullOrEmpty(dir))
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            _store = new Store(_storePath);
+
+            // Retry a few times with a small delay — native RocksDB handles may not
+            // be released immediately after Dispose in some environments (e.g. tests).
+            const int maxRetries = 3;
+            Exception? lastError = null;
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    _store = new Store(_storePath);
+                    return;
+                }
+                catch (Exception ex) when (i < maxRetries - 1)
+                {
+                    lastError = ex;
+                    Thread.Sleep(50);
+                }
+            }
+            throw lastError!;
         }
     }
 
@@ -36,11 +61,27 @@ public class OxigraphStoreCoordinator : IDisposable
     }
 
     /// <summary>
+    /// Closes the store and resets state so a fresh open is possible.
+    /// Safe for re-use across test scenarios.
+    /// </summary>
+    public void Reset()
+    {
+        lock (_lock)
+        {
+            if (_store != null)
+            {
+                _store.Dispose();
+                _store = null;
+            }
+        }
+    }
+
+    /// <summary>
     /// Executes a SPARQL query against the store.
     /// </summary>
     /// <param name="sparql">The SPARQL query string.</param>
-    /// <returns>An <see cref="Oxigraph.QueryResults"/> containing the query results. Caller is responsible for disposing.</returns>
-    public Oxigraph.QueryResults? ExecuteQuery(string sparql)
+    /// <returns>A <see cref="QueryResults"/> containing the query results.</returns>
+    public QueryResults ExecuteQuery(string sparql)
     {
         lock (_lock)
         {
@@ -57,7 +98,7 @@ public class OxigraphStoreCoordinator : IDisposable
         }
     }
 
-    public void AddQuads(IEnumerable<Oxigraph.Quad> quads)
+    public void AddQuads(IEnumerable<Quad> quads)
     {
         lock (_lock)
         {
@@ -80,24 +121,12 @@ public class OxigraphStoreCoordinator : IDisposable
     /// <summary>
     /// Builds the store from source data. This operation is delegated to <see cref="FinancialGraphBuilder"/>.
     /// </summary>
-    /// <remarks>
-    /// This stub throws <see cref="NotImplementedException"/> as the actual build logic
-    /// resides in FinancialGraphBuilder (Task 2). The coordinator provides the underlying
-    /// operations (Clear, AddQuads, Flush) that FinancialGraphBuilder orchestrates.
-    /// </remarks>
     public void Build()
         => throw new NotImplementedException("Build is handled by FinancialGraphBuilder");
 
     /// <summary>
     /// Exports the store data to a specified RDF format. This operation is delegated to <see cref="RdfExportService"/>.
     /// </summary>
-    /// <remarks>
-    /// This stub throws <see cref="NotImplementedException"/> as the actual export logic
-    /// resides in RdfExportService (Task 4). The coordinator provides query execution
-    /// that RdfExportService uses to retrieve data for export.
-    /// </remarks>
-    /// <param name="format">The RDF format (e.g., "trig", "nq", "ttl", "nt").</param>
-    /// <param name="outputStream">The stream to write exported data to.</param>
     public void Export(string format, Stream outputStream)
         => throw new NotImplementedException("Export is handled by RdfExportService");
 

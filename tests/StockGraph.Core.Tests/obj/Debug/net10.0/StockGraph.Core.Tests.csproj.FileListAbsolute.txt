@@ -134,3 +134,5 @@ E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\obj\Debug\net10.0\refi
 E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\obj\Debug\net10.0\StockGraph.Core.Tests.pdb
 E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\obj\Debug\net10.0\StockGraph.Core.Tests.genruntimeconfig.cache
 E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\obj\Debug\net10.0\ref\StockGraph.Core.Tests.dll
+E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\bin\Debug\net10.0\Oxigraph.pdb
+E:\GitHub\stockgraph-oxigraph\tests\StockGraph.Core.Tests\bin\Debug\net10.0\Oxigraph.Extensions.DotNetRDF.pdb

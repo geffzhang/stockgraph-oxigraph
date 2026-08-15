@@ -22,4 +22,12 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Copy native oxigraph_dotnet.dll to test output so P/Invoke can find it -->
+  <Target Name="CopyNativeOxigraphDll" BeforeTargets="Build">
+    <Copy SourceFiles="E:\GitHub\oxigraph\target\debug\oxigraph_dotnet.dll"
+          DestinationFiles="$(OutputPath)oxigraph_dotnet.dll"
+          SkipUnchangedFiles="true"
+          Condition="Exists('E:\GitHub\oxigraph\target\debug\oxigraph_dotnet.dll')" />
+  </Target>
+
 </Project>

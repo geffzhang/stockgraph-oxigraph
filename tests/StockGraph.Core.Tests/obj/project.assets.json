@@ -708,28 +708,6 @@
           }
         }
       },
-      "Oxigraph/0.5.7": {
-        "type": "package",
-        "compile": {
-          "lib/net10.0/Oxigraph.dll": {}
-        },
-        "runtime": {
-          "lib/net10.0/Oxigraph.dll": {}
-        }
-      },
-      "Oxigraph.Extensions.DotNetRDF/0.5.7": {
-        "type": "package",
-        "dependencies": {
-          "Oxigraph": "0.5.7",
-          "dotNetRdf": "3.5.2"
-        },
-        "compile": {
-          "lib/net10.0/Oxigraph.Extensions.DotNetRDF.dll": {}
-        },
-        "runtime": {
-          "lib/net10.0/Oxigraph.Extensions.DotNetRDF.dll": {}
-        }
-      },
       "Resta.UriTemplates/1.4.0": {
         "type": "package",
         "compile": {
@@ -948,12 +926,36 @@
           "build/net8.0/xunit.runner.visualstudio.props": {}
         }
       },
+      "Oxigraph/0.6.0-dev": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Oxigraph.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Oxigraph.dll": {}
+        }
+      },
+      "Oxigraph.Extensions.DotNetRDF/0.6.0-dev": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Oxigraph": "0.6.0-dev",
+          "dotNetRdf": "3.5.2"
+        },
+        "compile": {
+          "bin/placeholder/Oxigraph.Extensions.DotNetRDF.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Oxigraph.Extensions.DotNetRDF.dll": {}
+        }
+      },
       "StockGraph.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "Oxigraph": "0.5.7",
-          "Oxigraph.Extensions.DotNetRDF": "0.5.7",
+          "Oxigraph": "0.6.0-dev",
+          "Oxigraph.Extensions.DotNetRDF": "0.6.0-dev",
           "Sep": "0.15.2",
           "dotnetrdf.client": "3.5.2",
           "dotnetrdf.core": "3.5.2"
@@ -1858,32 +1860,6 @@
         "packageIcon.png"
       ]
     },
-    "Oxigraph/0.5.7": {
-      "sha512": "M2WkBSanMbjuSM0kceosFF3dZgnO4OSdphbaRLb9IikxvC2yDfuHEZ6kA2SVtseIqGB9bq1DplLMYz+WUiaqHQ==",
-      "type": "package",
-      "path": "oxigraph/0.5.7",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/net10.0/Oxigraph.dll",
-        "oxigraph.0.5.7.nupkg.sha512",
-        "oxigraph.nuspec"
-      ]
-    },
-    "Oxigraph.Extensions.DotNetRDF/0.5.7": {
-      "sha512": "uwGLFuFbSJNLk0a0iphOOODlt3t141VdF76omNxMX3jE1JHaRc6cyF2b5IsZ4mlw+2Xq0wI3G4430EAbVap3dA==",
-      "type": "package",
-      "path": "oxigraph.extensions.dotnetrdf/0.5.7",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/net10.0/Oxigraph.Extensions.DotNetRDF.dll",
-        "oxigraph.extensions.dotnetrdf.0.5.7.nupkg.sha512",
-        "oxigraph.extensions.dotnetrdf.nuspec"
-      ]
-    },
     "Resta.UriTemplates/1.4.0": {
       "sha512": "51tStewZPTrXHdc7iVxM9DBk/B7fs3fntQKF1ytLZ2Vx5EMGqD1tKYlFHIfcyT4jLjTXhApZGQEraANYJSx5WA==",
       "type": "package",
@@ -2264,6 +2240,16 @@
         "xunit.runner.visualstudio.3.1.4.nupkg.sha512",
         "xunit.runner.visualstudio.nuspec"
       ]
+    },
+    "Oxigraph/0.6.0-dev": {
+      "type": "project",
+      "path": "../../../oxigraph/dotnet/src/Oxigraph/Oxigraph.csproj",
+      "msbuildProject": "../../../oxigraph/dotnet/src/Oxigraph/Oxigraph.csproj"
+    },
+    "Oxigraph.Extensions.DotNetRDF/0.6.0-dev": {
+      "type": "project",
+      "path": "../../../oxigraph/dotnet/src/Oxigraph.Extensions.DotNetRDF/Oxigraph.Extensions.DotNetRDF.csproj",
+      "msbuildProject": "../../../oxigraph/dotnet/src/Oxigraph.Extensions.DotNetRDF/Oxigraph.Extensions.DotNetRDF.csproj"
     },
     "StockGraph.Core/1.0.0": {
       "type": "project",

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockGraph 可视化</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button id="btn-reload" title="重新加载">&#x27F3;</button>
+        <select id="filter-type" title="筛选节点类型">
+          <option value="">全部</option>
+          <option value="Stock">股票</option>
+          <option value="TradingDay">交易日</option>
+          <option value="NewsArticle">新闻</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <span id="stats"></span>
+      </div>
+    </div>
+    <div id="graph-container"></div>
+    <div id="detail-panel" class="hidden">
+      <button id="btn-close-panel">&#xD7;</button>
+      <h3 id="detail-title"></h3>
+      <dl id="detail-content"></dl>
+    </div>
+  </div>
+  <div id="loading" class="hidden">加载中&#x2026;</div>
+  <div id="error" class="hidden"></div>
+
+  <script src="https://unpkg.com/@antv/g6@4.8.24/dist/g6.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

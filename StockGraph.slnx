@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/StockGraph.Core/StockGraph.Core.csproj" />
+    <Project Path="src/StockGraph.Web/StockGraph.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/StockGraph.Core.Tests/StockGraph.Core.Tests.csproj" />
+    <Project Path="tests/StockGraph.Web.Tests/StockGraph.Web.Tests.csproj" />
   </Folder>
 </Solution>

@@ -11,3 +11,8 @@ E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\obj\Debug\net10.0\StockGraph.C
 E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\obj\Debug\net10.0\refint\StockGraph.Core.dll
 E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\obj\Debug\net10.0\StockGraph.Core.pdb
 E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\obj\Debug\net10.0\ref\StockGraph.Core.dll
+E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\bin\Debug\net10.0\Oxigraph.dll
+E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\bin\Debug\net10.0\Oxigraph.Extensions.DotNetRDF.dll
+E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\bin\Debug\net10.0\Oxigraph.pdb
+E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\bin\Debug\net10.0\Oxigraph.Extensions.DotNetRDF.pdb
+E:\GitHub\stockgraph-oxigraph\src\StockGraph.Core\obj\Debug\net10.0\StockGra.3391130E.Up2Date

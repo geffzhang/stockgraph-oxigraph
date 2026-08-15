@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StockGraph.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ccc3c8f1e53f3586d2b1071c20a8925d4a420c0f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e4d2991f1a9b84d1a78c366d6d6fee28847f0fa3")]
 [assembly: System.Reflection.AssemblyProductAttribute("StockGraph.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StockGraph.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
